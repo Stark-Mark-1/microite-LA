@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAppStore } from '@/store/appstore'
-import bg from 'D:/Wavelaps/microsite/assets/bg.webp'
+import bg from '../../assets/bg.webp'
 
 const appStore = useAppStore()
 

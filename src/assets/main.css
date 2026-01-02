@@ -2,27 +2,27 @@
 
 /* Custom fonts */
 @font-face {
-  font-family: "Didot";
+  font-family: "IvaryOraText";
   src: url("/assets/IvaryOraText-Light.otf") format("opentype");
-  font-weight: 400;
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Montserrat";
-  src: url("/assets/PPPangramSansCompact-Medium.otf") format("truetype");
-  font-weight: 400;
+  font-family: "PPPangramSansCompact";
+  src: url("/assets/PPPangramSansCompact-Medium.otf") format("opentype");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 /* Tell Tailwind to use these as the default serif/sans stacks */
 @theme {
-  --font-sans: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  --font-serif: "Didot", "Times New Roman", ui-serif, serif;
+  --font-sans: "PPPangramSansCompact", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "IvaryOraText", "Times New Roman", ui-serif, serif;
 }
+
 
 /* Globally prevent page scrolling */
 html,

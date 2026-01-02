@@ -17,15 +17,17 @@ const handleEnter = () => {
     <!-- Center content -->
     <div class="flex-1 flex items-center px-8 pointer-events-auto">
       <div class="max-w-xs">
-        <p class="text-3xl font-semibold leading-tight font-serif">
+        <p class="font-serif font-light text-[38px] leading-[42px]">
           LA28<br />
           EMPLOYEE<br />
           RAFFLE
         </p>
-        <p class="mt-4 text-sm leading-relaxed max-w-xs font-sans">
+
+        <p class="mt-4 font-sans font-medium text-[16px] leading-[20px] max-w-xs">
           START YOUR RAFFLE TICKET ENTRY<br />
           BY HITTING ENTER.
         </p>
+
 
         <!-- "Enter" button -->
         <button

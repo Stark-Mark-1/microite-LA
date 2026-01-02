@@ -167,7 +167,7 @@ const handleInput = (fieldName: string) => {
     <div class="flex-1 flex items-center justify-center px-8 py-12 pointer-events-auto" style="overflow: hidden;">
       <div class="w-full max-w-md">
         <!-- Title -->
-        <h1 class="text-4xl md:text-5xl font-serif font-bold leading-tight mb-8">
+        <h1 class="font-serif font-light text-[38px] leading-[42px] mb-8">
           ENTER<br />
           YOUR DETAILS
         </h1>
