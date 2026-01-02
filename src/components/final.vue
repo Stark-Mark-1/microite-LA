@@ -13,10 +13,10 @@ const appStore = useAppStore()
         <p class="text-3xl md:text-4xl font-serif font-bold leading-tight mb-2">
           CONGRATULATIONS!
         </p>
-        <p class="text-sm md:text-base font-sans font-semibold tracking-wide mb-4 text-left">
+        <p class="text-sm md:text-base font-sans font-semibold tracking-wide mb-4 text-left ml-1">
           YOU'VE BEEN ENTERED TO WIN.
         </p>
-        <p class="text-xs md:text-sm font-sans leading-relaxed text-white/90 max-w-xs mx-auto text-left">
+        <p class="text-xs md:text-sm font-sans leading-relaxed text-white/90 max-w-xs mx-auto text-left ml-1">
           Winners will be selected and notified post-event.
         </p>
       </div>
