@@ -32,7 +32,7 @@ const handleEnter = () => {
         <!-- "Enter" button -->
         <button
           type="button"
-          class="mt-8 inline-flex items-center justify-center rounded-full bg-white text-[13px] font-semibold tracking-wide text-gray-900 px-10 py-2 shadow-md font-sans"
+          class="mt-8 inline-flex items-center justify-center rounded-full bg-white text-[13px] tracking-wide text-gray-900 px-10 py-2 shadow-md font-sans"
           @click="handleEnter"
         >
           ENTER
