@@ -10,14 +10,14 @@ const appStore = useAppStore()
     <!-- Centered content -->
     <div class="flex-1 flex items-center justify-center px-8 py-10 pointer-events-auto">
       <div class="max-w-xs text-center">
-        <p class="text-3xl md:text-4xl font-serif font-bold leading-tight mb-6">
+        <p class="text-3xl md:text-4xl font-serif font-bold leading-tight mb-2">
           CONGRATULATIONS!
         </p>
-        <p class="text-sm md:text-base font-semibold tracking-wide mb-4">
+        <p class="text-sm md:text-base font-sans font-semibold tracking-wide mb-4 text-left">
           YOU'VE BEEN ENTERED TO WIN.
         </p>
-        <p class="text-xs md:text-sm leading-relaxed text-white/90 max-w-xs mx-auto">
-          Winners will be selected and notified post-event
+        <p class="text-xs md:text-sm font-sans leading-relaxed text-white/90 max-w-xs mx-auto text-left">
+          Winners will be selected and notified post-event.
         </p>
       </div>
     </div>
