@@ -20,47 +20,53 @@ const formData = ref({
 // Validation errors
 const errors = ref<Record<string, string>>({})
 
-// Dropdown state
-const openDropdown = ref<string | null>(null)
+// Modal state
+const openModal = ref<string | null>(null)
 
-// Toggle dropdown
-const toggleDropdown = (fieldName: string) => {
-  if (openDropdown.value === fieldName) {
-    openDropdown.value = null
+// Toggle modal
+const toggleModal = (fieldName: string) => {
+  if (openModal.value === fieldName) {
+    openModal.value = null
   } else {
-    openDropdown.value = fieldName
+    openModal.value = fieldName
   }
+}
+
+// Close modal
+const closeModal = () => {
+  openModal.value = null
 }
 
 // Select option
 const selectOption = (fieldName: 'shirtSize' | 'jacketSize', value: string) => {
   formData.value[fieldName] = value
-  openDropdown.value = null
+  openModal.value = null
   handleInput(fieldName)
 }
 
-// Close dropdown when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
+// Close modal when clicking on backdrop
+const handleBackdropClick = (event: MouseEvent | TouchEvent) => {
   const target = event.target as HTMLElement
-  if (!target.closest('.custom-dropdown')) {
-    openDropdown.value = null
+  // Check if click is on the backdrop itself (not on modal content)
+  if (target === event.currentTarget || target.classList.contains('modal-backdrop')) {
+    event.preventDefault()
+    event.stopPropagation()
+    closeModal()
   }
 }
 
-// Close dropdown on escape key
+// Close modal on escape key
 const handleEscape = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    openDropdown.value = null
+    closeModal()
   }
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleEscape)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleEscape)
 })
 
@@ -235,19 +241,18 @@ const handleInput = (fieldName: string) => {
           </div>
 
           <!-- Shirt Size -->
-          <div class="relative custom-dropdown">
+          <div class="relative">
             <button
               type="button"
-              @click="toggleDropdown('shirtSize')"
+              @click="toggleModal('shirtSize')"
               class="w-full px-4 py-3 pr-10 rounded-full bg-white text-gray-900 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all text-left flex items-center justify-between"
-              :class="{ 'ring-2 ring-red-400': errors.shirtSize, 'ring-2 ring-red-500': openDropdown === 'shirtSize' }"
+              :class="{ 'ring-2 ring-red-400': errors.shirtSize }"
             >
               <span :class="{ 'text-gray-500': !formData.shirtSize }">
                 {{ formData.shirtSize || 'SHIRT SIZE*' }}
               </span>
               <svg 
                 class="w-5 h-5 text-red-500 transition-transform duration-200 flex-shrink-0 ml-2"
-                :class="{ 'rotate-180': openDropdown === 'shirtSize' }"
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -255,53 +260,24 @@ const handleInput = (fieldName: string) => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
-            <!-- Dropdown Options -->
-            <Transition
-              enter-active-class="transition-all duration-200 ease-out"
-              enter-from-class="opacity-0 -translate-y-2"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition-all duration-150 ease-in"
-              leave-from-class="opacity-100 translate-y-0"
-              leave-to-class="opacity-0 -translate-y-2"
-            >
-              <div
-                v-if="openDropdown === 'shirtSize'"
-                class="absolute z-50 w-full top-full mt-2 rounded-2xl bg-white shadow-lg border border-red-100 overflow-hidden"
-                style="max-height: calc(100vh - 20px);"
-              >
-                <div class="py-1 overflow-y-auto dropdown-scrollbar" style="max-height: 180px; touch-action: pan-y; -webkit-overflow-scrolling: touch;">
-                  <button
-                    v-for="size in sizeOptions"
-                    :key="size"
-                    type="button"
-                    @click="selectOption('shirtSize', size)"
-                    class="w-full px-4 py-3 text-left text-gray-900 text-base font-medium hover:bg-red-50 transition-colors"
-                    :class="{ 'bg-red-100 text-red-600': formData.shirtSize === size }"
-                  >
-                    {{ size }}
-                  </button>
-                </div>
-              </div>
-            </Transition>
             <p v-if="errors.shirtSize" class="mt-1 ml-4 text-xs text-red-300">
               {{ errors.shirtSize }}
             </p>
           </div>
 
           <!-- Jacket Size -->
-          <div class="relative custom-dropdown">
+          <div class="relative">
             <button
               type="button"
-              @click="toggleDropdown('jacketSize')"
+              @click="toggleModal('jacketSize')"
               class="w-full px-4 py-3 pr-10 rounded-full bg-white text-gray-900 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all text-left flex items-center justify-between"
-              :class="{ 'ring-2 ring-red-400': errors.jacketSize, 'ring-2 ring-red-500': openDropdown === 'jacketSize' }"
+              :class="{ 'ring-2 ring-red-400': errors.jacketSize }"
             >
               <span :class="{ 'text-gray-500': !formData.jacketSize }">
                 {{ formData.jacketSize || 'JACKET SIZE*' }}
               </span>
               <svg 
                 class="w-5 h-5 text-red-500 transition-transform duration-200 flex-shrink-0 ml-2"
-                :class="{ 'rotate-180': openDropdown === 'jacketSize' }"
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -309,34 +285,6 @@ const handleInput = (fieldName: string) => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
-            <!-- Dropdown Options -->
-            <Transition
-              enter-active-class="transition-all duration-200 ease-out"
-              enter-from-class="opacity-0 -translate-y-2"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition-all duration-150 ease-in"
-              leave-from-class="opacity-100 translate-y-0"
-              leave-to-class="opacity-0 -translate-y-2"
-            >
-              <div
-                v-if="openDropdown === 'jacketSize'"
-                class="absolute z-50 w-full top-full mt-2 rounded-2xl bg-white shadow-lg border border-red-100 overflow-hidden"
-                style="max-height: calc(100vh - 20px);"
-              >
-                <div class="py-1 overflow-y-auto dropdown-scrollbar" style="max-height: 180px; touch-action: pan-y; -webkit-overflow-scrolling: touch;">
-                  <button
-                    v-for="size in sizeOptions"
-                    :key="size"
-                    type="button"
-                    @click="selectOption('jacketSize', size)"
-                    class="w-full px-4 py-3 text-left text-gray-900 text-base font-medium hover:bg-red-50 transition-colors"
-                    :class="{ 'bg-red-100 text-red-600': formData.jacketSize === size }"
-                  >
-                    {{ size }}
-                  </button>
-                </div>
-              </div>
-            </Transition>
             <p v-if="errors.jacketSize" class="mt-1 ml-4 text-xs text-red-300">
               {{ errors.jacketSize }}
             </p>
@@ -355,36 +303,141 @@ const handleInput = (fieldName: string) => {
         </form>
       </div>
     </div>
+
   </div>
+
+  <!-- Shirt Size Modal -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="openModal === 'shirtSize'"
+        class="fixed inset-0 z-[9999] flex items-center justify-center modal-backdrop pointer-events-auto"
+        @click="handleBackdropClick"
+        @touchend="handleBackdropClick"
+        style="background-color: rgba(0, 0, 0, 0.5);"
+      >
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 scale-95 translate-y-4"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-95 translate-y-4"
+        >
+          <div
+            v-if="openModal === 'shirtSize'"
+            class="bg-white rounded-2xl shadow-xl border border-red-100 overflow-hidden w-full max-w-xs mx-4 pointer-events-auto"
+            @click.stop
+            @touchend.stop
+          >
+            <div class="px-4 py-2.5 border-b border-red-100">
+              <h2 class="text-sm font-medium text-gray-900">SELECT SHIRT SIZE</h2>
+            </div>
+            <div class="py-1 pointer-events-auto">
+              <button
+                v-for="size in sizeOptions"
+                :key="size"
+                type="button"
+                @click="selectOption('shirtSize', size)"
+                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation"
+                :class="{ 'bg-red-100 text-red-600': formData.shirtSize === size }"
+              >
+                {{ size }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Jacket Size Modal -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="openModal === 'jacketSize'"
+        class="fixed inset-0 z-[9999] flex items-center justify-center modal-backdrop pointer-events-auto"
+        @click="handleBackdropClick"
+        @touchend="handleBackdropClick"
+        style="background-color: rgba(0, 0, 0, 0.5);"
+      >
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 scale-95 translate-y-4"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-95 translate-y-4"
+        >
+          <div
+            v-if="openModal === 'jacketSize'"
+            class="bg-white rounded-2xl shadow-xl border border-red-100 overflow-hidden w-full max-w-xs mx-4 pointer-events-auto"
+            @click.stop
+            @touchend.stop
+          >
+            <div class="px-4 py-2.5 border-b border-red-100">
+              <h2 class="text-sm font-medium text-gray-900">SELECT JACKET SIZE</h2>
+            </div>
+            <div class="py-1 pointer-events-auto">
+              <button
+                v-for="size in sizeOptions"
+                :key="size"
+                type="button"
+                @click="selectOption('jacketSize', size)"
+                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation"
+                :class="{ 'bg-red-100 text-red-600': formData.jacketSize === size }"
+              >
+                {{ size }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
-/* Custom red scrollbar for dropdowns */
-.dropdown-scrollbar {
+/* Custom red scrollbar for modals */
+.modal-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #ef4444 #ffffff;
 }
 
-.dropdown-scrollbar::-webkit-scrollbar {
+.modal-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
-.dropdown-scrollbar::-webkit-scrollbar-track {
+.modal-scrollbar::-webkit-scrollbar-track {
   background: #ffffff;
   border-radius: 4px;
 }
 
-.dropdown-scrollbar::-webkit-scrollbar-thumb {
+.modal-scrollbar::-webkit-scrollbar-thumb {
   background: #ef4444;
   border-radius: 4px;
 }
 
-.dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #dc2626;
 }
 
 /* Firefox scrollbar */
-.dropdown-scrollbar {
+.modal-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #ef4444 #ffffff;
 }
