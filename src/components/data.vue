@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAppStore } from '@/store/appstore'
 
 const appStore = useAppStore()
+
+// Ref for the scrollable container
+const scrollContainer = ref<HTMLElement | null>(null)
 
 // Size options for dropdowns
 const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
@@ -62,12 +65,43 @@ const handleEscape = (event: KeyboardEvent) => {
   }
 }
 
+// Viewport resize handler for mobile keyboard
+let viewportResizeHandler: (() => void) | null = null
+
 onMounted(() => {
   document.addEventListener('keydown', handleEscape)
+  
+  // Handle viewport changes on mobile (keyboard appearing/disappearing)
+  if (window.visualViewport) {
+    viewportResizeHandler = () => {
+      // When keyboard appears, ensure focused input is visible
+      const activeElement = document.activeElement as HTMLInputElement
+      if (activeElement && activeElement.tagName === 'INPUT' && scrollContainer.value) {
+        requestAnimationFrame(() => {
+          const inputRect = activeElement.getBoundingClientRect()
+          const viewportHeight = window.visualViewport!.height
+          
+          // If input is below visible area, scroll it into view
+          if (inputRect.bottom > viewportHeight - 20) {
+            const inputOffsetTop = activeElement.offsetTop
+            scrollContainer.value!.scrollTo({
+              top: inputOffsetTop - 100,
+              behavior: 'smooth'
+            })
+          }
+        })
+      }
+    }
+    
+    window.visualViewport.addEventListener('resize', viewportResizeHandler)
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEscape)
+  if (window.visualViewport && viewportResizeHandler) {
+    window.visualViewport.removeEventListener('resize', viewportResizeHandler)
+  }
 })
 
 // Validation functions
@@ -164,14 +198,50 @@ const handleInput = (fieldName: string) => {
     delete errors.value[fieldName]
   }
 }
+
+// Handle input focus to scroll into view on mobile
+const handleInputFocus = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!scrollContainer.value) return
+  
+  // Use requestAnimationFrame and setTimeout to ensure keyboard is shown before scrolling
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const containerRect = scrollContainer.value!.getBoundingClientRect()
+      const inputRect = input.getBoundingClientRect()
+      
+      // Calculate if input is visible in the viewport (accounting for keyboard)
+      const viewportHeight = window.visualViewport?.height || window.innerHeight
+      const inputBottom = inputRect.bottom
+      const inputTop = inputRect.top
+      
+      // If input is below visible area or too close to bottom, scroll it into view
+      if (inputBottom > viewportHeight - 20 || inputTop < 100) {
+        // Scroll the container to bring input into view
+        const scrollTop = scrollContainer.value!.scrollTop
+        const inputOffsetTop = input.offsetTop
+        const containerPadding = 100 // Extra padding from top
+        
+        scrollContainer.value!.scrollTo({
+          top: inputOffsetTop - containerPadding,
+          behavior: 'smooth'
+        })
+      }
+    }, 350) // Delay to account for keyboard animation on iOS
+  })
+}
 </script>
 
 <template>
   <!-- Full-screen content overlay that sits on top of the existing background -->
   <div class="fixed inset-0 flex flex-col text-white pointer-events-none overflow-hidden" style="touch-action: none; overscroll-behavior: none;">
     <!-- Center content with form -->
-    <div class="flex-1 flex items-center justify-center px-8 py-12 pointer-events-auto" style="overflow: hidden;">
-      <div class="w-full max-w-md">
+    <div 
+      ref="scrollContainer"
+      class="flex-1 flex items-start justify-center px-8 py-8 pointer-events-auto overflow-y-auto"
+      style="overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: max(2rem, env(safe-area-inset-top)); padding-bottom: max(2rem, env(safe-area-inset-bottom));"
+    >
+      <div class="w-full max-w-md py-8">
         <!-- Title -->
         <h1 class="font-serif font-light text-[38px] leading-[42px] mb-8">
           ENTER<br />
@@ -185,6 +255,7 @@ const handleInput = (fieldName: string) => {
             <input
               v-model="formData.firstName"
               @input="handleInput('firstName')"
+              @focus="handleInputFocus"
               type="text"
               placeholder="FIRST NAME*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
@@ -200,6 +271,7 @@ const handleInput = (fieldName: string) => {
             <input
               v-model="formData.lastName"
               @input="handleInput('lastName')"
+              @focus="handleInputFocus"
               type="text"
               placeholder="LAST NAME*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
@@ -215,6 +287,7 @@ const handleInput = (fieldName: string) => {
             <input
               v-model="formData.hospital"
               @input="handleInput('hospital')"
+              @focus="handleInputFocus"
               type="text"
               placeholder="HOSPITAL*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
@@ -230,6 +303,7 @@ const handleInput = (fieldName: string) => {
             <input
               v-model="formData.email"
               @input="handleInput('email')"
+              @focus="handleInputFocus"
               type="email"
               placeholder="EMPLOYEE WORK EMAIL*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
@@ -296,7 +370,7 @@ const handleInput = (fieldName: string) => {
           <!-- Submit Button -->
           <button
             type="submit"
-            class="mt-1 inline-flex items-center justify-center rounded-full bg-white text-[13px] tracking-wide text-gray-900 px-10 py-2 shadow-md font-sans"
+            class="mt-1 mb-8 inline-flex items-center justify-center rounded-full bg-white text-[13px] tracking-wide text-gray-900 px-10 py-2 shadow-md font-sans"
           >
             SUBMIT
           </button>
@@ -440,5 +514,27 @@ const handleInput = (fieldName: string) => {
 .modal-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #ef4444 #ffffff;
+}
+
+/* Mobile-specific styles for better keyboard handling */
+@media (max-width: 768px) {
+  /* Ensure inputs are easily tappable */
+  input {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  /* Better spacing on mobile */
+  .flex-1 {
+    align-items: flex-start !important;
+    padding-top: 1.5rem !important;
+  }
+}
+
+/* Support for iOS safe areas */
+@supports (padding: max(0px)) {
+  .flex-1 {
+    padding-top: max(1.5rem, env(safe-area-inset-top)) !important;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom)) !important;
+  }
 }
 </style>
