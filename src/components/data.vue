@@ -76,16 +76,23 @@ onMounted(() => {
     viewportResizeHandler = () => {
       // When keyboard appears, ensure focused input is visible
       const activeElement = document.activeElement as HTMLInputElement
+      // IMPORTANT: Only handle INPUT elements, not buttons
       if (activeElement && activeElement.tagName === 'INPUT' && scrollContainer.value) {
         requestAnimationFrame(() => {
           const inputRect = activeElement.getBoundingClientRect()
           const viewportHeight = window.visualViewport!.height
           
+          // Check if this is the email field (needs extra space for autocomplete bar)
+          const isEmailField = activeElement.type === 'email'
+          // Updated thresholds to match handleInputFocus values
+          const bottomThreshold = isEmailField ? 250 : 80
+          const extraPadding = isEmailField ? 220 : 150
+          
           // If input is below visible area, scroll it into view
-          if (inputRect.bottom > viewportHeight - 20) {
+          if (inputRect.bottom > viewportHeight - bottomThreshold) {
             const inputOffsetTop = activeElement.offsetTop
             scrollContainer.value!.scrollTo({
-              top: inputOffsetTop - 100,
+              top: inputOffsetTop - extraPadding,
               behavior: 'smooth'
             })
           }
@@ -202,32 +209,29 @@ const handleInput = (fieldName: string) => {
 // Handle input focus to scroll into view on mobile
 const handleInputFocus = (event: Event) => {
   const input = event.target as HTMLInputElement
-  if (!scrollContainer.value) return
+  
+  // IMPORTANT: Only handle INPUT elements, not buttons
+  if (!scrollContainer.value || input.tagName !== 'INPUT') return
+  
+  // Check if this is the email field (needs extra space for autocomplete bar)
+  const isEmailField = input.type === 'email' || input.getAttribute('type') === 'email'
+  
+  // LINE 220-221: Controls how much the fields below move down when this field is focused
+  // Increase these values to move fields below DOWN MORE (more space above the focused field)
+  // Decrease these values to move fields below DOWN LESS (less space above the focused field)
+  const scrollOffset = isEmailField ? 220 : 150 // Pixels from top - controls how low fields below will go
   
   // Use requestAnimationFrame and setTimeout to ensure keyboard is shown before scrolling
   requestAnimationFrame(() => {
     setTimeout(() => {
-      const containerRect = scrollContainer.value!.getBoundingClientRect()
-      const inputRect = input.getBoundingClientRect()
+      // Always scroll when any input field is focused to move fields below down
+      const inputOffsetTop = input.offsetTop
       
-      // Calculate if input is visible in the viewport (accounting for keyboard)
-      const viewportHeight = window.visualViewport?.height || window.innerHeight
-      const inputBottom = inputRect.bottom
-      const inputTop = inputRect.top
-      
-      // If input is below visible area or too close to bottom, scroll it into view
-      if (inputBottom > viewportHeight - 20 || inputTop < 100) {
-        // Scroll the container to bring input into view
-        const scrollTop = scrollContainer.value!.scrollTop
-        const inputOffsetTop = input.offsetTop
-        const containerPadding = 100 // Extra padding from top
-        
-        scrollContainer.value!.scrollTo({
-          top: inputOffsetTop - containerPadding,
-          behavior: 'smooth'
-        })
-      }
-    }, 350) // Delay to account for keyboard animation on iOS
+      scrollContainer.value!.scrollTo({
+        top: inputOffsetTop - scrollOffset,
+        behavior: 'smooth'
+      })
+    }, 400) // Delay to account for keyboard animation on iOS
   })
 }
 </script>
@@ -257,6 +261,10 @@ const handleInputFocus = (event: Event) => {
               @input="handleInput('firstName')"
               @focus="handleInputFocus"
               type="text"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               placeholder="FIRST NAME*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
               :class="{ 'ring-2 ring-red-400': errors.firstName }"
@@ -273,6 +281,10 @@ const handleInputFocus = (event: Event) => {
               @input="handleInput('lastName')"
               @focus="handleInputFocus"
               type="text"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               placeholder="LAST NAME*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
               :class="{ 'ring-2 ring-red-400': errors.lastName }"
@@ -289,6 +301,10 @@ const handleInputFocus = (event: Event) => {
               @input="handleInput('hospital')"
               @focus="handleInputFocus"
               type="text"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               placeholder="HOSPITAL*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
               :class="{ 'ring-2 ring-red-400': errors.hospital }"
@@ -305,6 +321,11 @@ const handleInputFocus = (event: Event) => {
               @input="handleInput('email')"
               @focus="handleInputFocus"
               type="email"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              name="email-address"
               placeholder="EMPLOYEE WORK EMAIL*"
               class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
               :class="{ 'ring-2 ring-red-400': errors.email }"
@@ -527,6 +548,17 @@ const handleInputFocus = (event: Event) => {
   .flex-1 {
     align-items: flex-start !important;
     padding-top: 1.5rem !important;
+  }
+  
+  /* Extra spacing for email field to account for autocomplete bar */
+  input[type="email"]:focus {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Prevent iOS from showing autocomplete suggestions */
+  input[type="email"] {
+    -webkit-appearance: none;
+    appearance: none;
   }
 }
 
