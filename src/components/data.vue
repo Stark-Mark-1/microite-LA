@@ -219,7 +219,7 @@ const handleInputFocus = (event: Event) => {
   // LINE 220-221: Controls how much the fields below move down when this field is focused
   // Increase these values to move fields below DOWN MORE (more space above the focused field)
   // Decrease these values to move fields below DOWN LESS (less space above the focused field)
-  const scrollOffset = isEmailField ? 220 : 150 // Pixels from top - controls how low fields below will go
+  const scrollOffset = isEmailField ? 300 : 150 // Pixels from top - controls how low fields below will go
   
   // Use requestAnimationFrame and setTimeout to ensure keyboard is shown before scrolling
   requestAnimationFrame(() => {
