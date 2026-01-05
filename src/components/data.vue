@@ -73,32 +73,36 @@ onMounted(() => {
   
   // Handle viewport changes on mobile (keyboard appearing/disappearing)
   if (window.visualViewport) {
-    viewportResizeHandler = () => {
-      // When keyboard appears, ensure focused input is visible
-      const activeElement = document.activeElement as HTMLInputElement
-      // IMPORTANT: Only handle INPUT elements, not buttons
-      if (activeElement && activeElement.tagName === 'INPUT' && scrollContainer.value) {
-        requestAnimationFrame(() => {
-          const inputRect = activeElement.getBoundingClientRect()
-          const viewportHeight = window.visualViewport!.height
-          
-          // Check if this is the email field (needs extra space for autocomplete bar)
-          const isEmailField = activeElement.type === 'email'
-          // Updated thresholds to match handleInputFocus values
-          const bottomThreshold = isEmailField ? 250 : 80
-          const extraPadding = isEmailField ? 50 : 150
-          
-          // If input is below visible area, scroll it into view
-          if (inputRect.bottom > viewportHeight - bottomThreshold) {
-            const inputOffsetTop = activeElement.offsetTop
-            scrollContainer.value!.scrollTo({
-              top: inputOffsetTop - extraPadding,
-              behavior: 'smooth'
-            })
-          }
+    // Inside onMounted -> viewportResizeHandler
+
+viewportResizeHandler = () => {
+  const activeElement = document.activeElement as HTMLInputElement
+  if (activeElement && activeElement.tagName === 'INPUT' && scrollContainer.value) {
+    requestAnimationFrame(() => {
+      const inputRect = activeElement.getBoundingClientRect()
+      const viewportHeight = window.visualViewport!.height
+      
+      const isEmailField = activeElement.type === 'email'
+
+      // CHANGE 1: Increase this to 350. 
+      // This accounts for the extra height of the "Glass UI" suggestion bar.
+      const bottomThreshold = isEmailField ? 350 : 80
+      
+      // CHANGE 2: Decrease this to 20.
+      // This pulls the field up to the very top of the visible area.
+      const extraPadding = isEmailField ? 20 : 150
+      
+      if (inputRect.bottom > viewportHeight - bottomThreshold) {
+        // ... (rest of the code remains the same)
+        const inputOffsetTop = activeElement.offsetTop
+        scrollContainer.value!.scrollTo({
+          top: inputOffsetTop - extraPadding,
+          behavior: 'smooth' // You can try 'auto' if smooth is too slow
         })
       }
-    }
+    })
+  }
+}
     
     window.visualViewport.addEventListener('resize', viewportResizeHandler)
   }
