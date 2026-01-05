@@ -86,7 +86,7 @@ onMounted(() => {
           const isEmailField = activeElement.type === 'email'
           // Updated thresholds to match handleInputFocus values
           const bottomThreshold = isEmailField ? 250 : 80
-          const extraPadding = isEmailField ? 220 : 150
+          const extraPadding = isEmailField ? 100 : 150
           
           // If input is below visible area, scroll it into view
           if (inputRect.bottom > viewportHeight - bottomThreshold) {
@@ -216,10 +216,7 @@ const handleInputFocus = (event: Event) => {
   // Check if this is the email field (needs extra space for autocomplete bar)
   const isEmailField = input.type === 'email' || input.getAttribute('type') === 'email'
   
-  // LINE 220-221: Controls how much the fields below move down when this field is focused
-  // Increase these values to move fields below DOWN MORE (more space above the focused field)
-  // Decrease these values to move fields below DOWN LESS (less space above the focused field)
-  const scrollOffset = isEmailField ? 450 : 150 // Pixels from top - controls how low fields below will go
+  const scrollOffset = isEmailField ? 80 : 150 // Pixels from top - smaller = more space above, larger = less space above
   
   // Use requestAnimationFrame and setTimeout to ensure keyboard is shown before scrolling
   requestAnimationFrame(() => {
