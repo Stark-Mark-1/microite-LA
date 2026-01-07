@@ -5,7 +5,10 @@ const appStore = useAppStore()
 
 const handleEnter = () => {
   appStore.showhome = false
-  appStore.showdata = true
+  // Wait for the home fade-out transition to finish before showing the data screen
+  setTimeout(() => {
+    appStore.showdata = true
+  }, 500) // matches the 500ms transition duration in App.vue
   appStore.sendAnalyticsData('startbtn')
 }
 </script>
