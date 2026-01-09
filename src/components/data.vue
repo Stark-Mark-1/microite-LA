@@ -10,6 +10,15 @@ const scrollContainer = ref<HTMLElement | null>(null)
 // Size options for dropdowns
 const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
+// Hospital options for dropdown
+const hospitalOptions = [
+  'Cedars-Sinai Medical Center (Beverly Hills)',
+  'Huntington Health | Pasadena',
+  'Cedar-Sinai Marina del Rey',
+  'Torrance Memorial Medical Center',
+  'Providence Cedars-Sinai Tarzana Medical Center'
+]
+
 // Form data
 const formData = ref({
   firstName: '',
@@ -41,7 +50,7 @@ const closeModal = () => {
 }
 
 // Select option
-const selectOption = (fieldName: 'shirtSize' | 'jacketSize', value: string) => {
+const selectOption = (fieldName: 'shirtSize' | 'jacketSize' | 'hospital', value: string) => {
   formData.value[fieldName] = value
   openModal.value = null
   handleInput(fieldName)
@@ -149,8 +158,9 @@ const validateField = (fieldName: string, value: string): string => {
       }
       break
     case 'HOSPITAL':
-      if (value.trim().length < 2) {
-        return 'Hospital name must be at least 2 characters'
+      // Validate against available hospital options
+      if (!hospitalOptions.includes(value.trim())) {
+        return 'Please select a valid hospital'
       }
       break
     case 'SHIRT SIZE':
@@ -296,20 +306,25 @@ const handleInputFocus = (event: Event) => {
           </div>
 
           <!-- Hospital -->
-          <div>
-            <input
-              v-model="formData.hospital"
-              @input="handleInput('hospital')"
-              @focus="handleInputFocus"
-              type="text"
-              autocomplete="new-password"
-              autocorrect="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="HOSPITAL*"
-              class="w-full px-4 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+          <div class="relative">
+            <button
+              type="button"
+              @click="toggleModal('hospital')"
+              class="w-full px-4 py-3 pr-10 rounded-full bg-white text-gray-900 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all text-left flex items-center justify-between"
               :class="{ 'ring-2 ring-red-400': errors.hospital }"
-            />
+            >
+              <span :class="{ 'text-gray-500': !formData.hospital }" class="truncate">
+                {{ formData.hospital || 'HOSPITAL*' }}
+              </span>
+              <svg 
+                class="w-5 h-5 text-red-500 transition-transform duration-200 flex-shrink-0 ml-2"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
             <p v-if="errors.hospital" class="mt-1 ml-4 text-xs text-red-300">
               {{ errors.hospital }}
             </p>
@@ -438,11 +453,11 @@ const handleInputFocus = (event: Event) => {
             </div>
             <div class="py-1 pointer-events-auto">
               <button
-                v-for="size in sizeOptions"
+                v-for="(size, index) in sizeOptions"
                 :key="size"
                 type="button"
                 @click="selectOption('shirtSize', size)"
-                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation"
+                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation border-b border-red-100 last:border-b-0"
                 :class="{ 'bg-red-100 text-red-600': formData.shirtSize === size }"
               >
                 {{ size }}
@@ -490,14 +505,66 @@ const handleInputFocus = (event: Event) => {
             </div>
             <div class="py-1 pointer-events-auto">
               <button
-                v-for="size in sizeOptions"
+                v-for="(size, index) in sizeOptions"
                 :key="size"
                 type="button"
                 @click="selectOption('jacketSize', size)"
-                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation"
+                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation border-b border-red-100 last:border-b-0"
                 :class="{ 'bg-red-100 text-red-600': formData.jacketSize === size }"
               >
                 {{ size }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Hospital Modal -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="openModal === 'hospital'"
+        class="fixed inset-0 z-[9999] flex items-center justify-center modal-backdrop pointer-events-auto"
+        @click="handleBackdropClick"
+        @touchend="handleBackdropClick"
+        style="background-color: rgba(0, 0, 0, 0.5);"
+      >
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 scale-95 translate-y-4"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-95 translate-y-4"
+        >
+          <div
+            v-if="openModal === 'hospital'"
+            class="bg-white rounded-2xl shadow-xl border border-red-100 overflow-hidden w-full max-w-md mx-4 pointer-events-auto max-h-[80vh] flex flex-col"
+            @click.stop
+            @touchend.stop
+          >
+            <div class="px-4 py-2.5 border-b border-red-100 flex-shrink-0">
+              <h2 class="text-sm font-medium text-gray-900">SELECT HOSPITAL</h2>
+            </div>
+            <div class="py-1 pointer-events-auto overflow-y-auto modal-scrollbar flex-1">
+              <button
+                v-for="(hospital, index) in hospitalOptions"
+                :key="hospital"
+                type="button"
+                @click="selectOption('hospital', hospital)"
+                class="w-full px-4 py-2.5 text-left text-gray-900 text-sm font-medium hover:bg-red-50 active:bg-red-100 transition-colors pointer-events-auto touch-manipulation border-b border-red-100 last:border-b-0"
+                :class="{ 'bg-red-100 text-red-600': formData.hospital === hospital }"
+              >
+                {{ hospital }}
               </button>
             </div>
           </div>
