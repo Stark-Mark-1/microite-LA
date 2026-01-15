@@ -130,10 +130,6 @@ const validateEmail = (email: string): boolean => {
   return emailRegex.test(email)
 }
 
-const validateCedarsEmail = (email: string): boolean => {
-  return email.toLowerCase().endsWith('@cedars.com')
-}
-
 const validateField = (fieldName: string, value: string): string => {
   if (!value || value.trim() === '') {
     return `${fieldName} is required`
@@ -143,9 +139,6 @@ const validateField = (fieldName: string, value: string): string => {
     case 'EMPLOYEE WORK EMAIL':
       if (!validateEmail(value)) {
         return 'Please enter a valid email address'
-      }
-      if (!validateCedarsEmail(value)) {
-        return 'Only cedars.com emails are eligible'
       }
       break
     case 'FIRST NAME':
