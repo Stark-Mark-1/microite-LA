@@ -12,8 +12,8 @@ const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 // Hospital options for dropdown
 const hospitalOptions = [
-  'Cedars-Sinai Medical Center (Beverly Hills)',
-  'Huntington Health | Pasadena',
+  'Cedars-Sinai Medical Center',
+  'Huntington Health',
   'Cedar-Sinai Marina del Rey',
   'Torrance Memorial Medical Center',
   'Providence Cedars-Sinai Tarzana Medical Center'
